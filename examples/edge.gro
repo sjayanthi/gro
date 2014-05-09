@@ -18,7 +18,7 @@
 
 // This example was devised by Rehana Rodrigues and refined by Kevin Oishi.
 
-include gro
+include /home/shridhar/programming/gro/include/gro
 
 set ( "dt", 0.1 );
 

@@ -16,7 +16,9 @@
 //
 
 
-include gro
+include /home/shridhar/programming/gro/include/gro
+
+
 
 set ( "dt", 0.1 );
 
@@ -49,7 +51,9 @@ program report() := {
 set ( "rfp_saturation_max", 50 );
 set ( "rfp_saturation_min", 0 );
 
-ecoli ( [ x:= 0, y:= 0 ], program sensor() + report() sharing rfp );
+ecoli ( [ x:= -200, y:= 0 ], program sensor() + report() sharing rfp );
+
+ecoli ( [ x:= 200, y:= 0 ], program sensor() + report() sharing rfp );
 
 program main() := {
 

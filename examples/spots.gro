@@ -15,7 +15,7 @@
 // TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 //
 
-include gro
+include /home/shridhar/programming/gro/include/gro
 
 set ("dt",0.05);
 //set ("ecoli_growth_rate",0.00);

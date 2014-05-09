@@ -22,6 +22,8 @@
 #endif
 
 #include "Micro.h"
+#include "EColi.h"
+
 
 #ifdef NOGUI
 World::World ( void ) {
@@ -67,6 +69,61 @@ World::~World ( void ) {
 
 }
 
+static int
+negotiate_collision(cpArbiter *arb, cpSpace *space, void *unused)
+{
+  // Get the cpShapes involved in the collision
+  // The order will be the same as you defined in the handler definition
+  // a->collision_type will be BULLET_TYPE and b->collision_type will be MONSTER_TYPE
+  cpBody *a, *b; cpArbiterGetBodies(arb, &a, &b);
+  EColi *aa, *bb;
+  aa = (EColi *) a->data;
+  bb = (EColi *) b->data;
+
+  int contact_points = cpArbiterGetCount(arb);
+
+  Program *program_a = aa-> get_gro_program();
+  SymbolTable *table_a  = program_a->get_symtab();
+
+  Program *program_b = bb-> get_gro_program();
+  SymbolTable *table_b  = program_b->get_symtab();
+
+  int atob = 0;
+  int btoa = 0;
+
+  float rate = 0.99;
+
+  if (table_a->get("cdiA")!= NULL && table_b->get("cdiA_CT") != NULL) atob == 1;
+  if (table_b->get("cdiA")!= NULL && table_a->get("cdiA_CT") != NULL) btoa == 1;
+
+  if (atob ==1){
+      int cdiA_a = table_a -> get("cdiA")->int_value();
+      int cdiAct_b = table_b -> get("cdiA_CT")->int_value();
+
+      if (cdiA_a >0 && random(0,1)>rate){
+        table_a -> assign("cdiA",new Value(cdiA_a - contact_points));
+        table_b -> assign("cdiA_CT",new Value(cdiAct_b +contact_points));
+      }
+  }
+
+  if (btoa ==1) {
+      int cdiAct_a = table_a -> get("cdiA_CT")->int_value();
+      int cdiA_b = table_b -> get("cdiA")->int_value();
+      if (cdiA_b>0 && random(0,1)>rate ){
+        table_b -> assign("cdiA",new Value(cdiA_b -contact_points));
+        table_a -> assign("cdiA_CT",new Value(cdiAct_a +contact_points));
+      }
+
+  }
+
+
+ 
+
+
+  
+  return 1;
+}
+
 void Cell::init ( const int * q0, const int * rep0, float frac ) {
 
     int i;
@@ -91,6 +148,10 @@ void World::init () {
     cpSpaceResizeActiveHash(space, 60.0f, 10000);
     space->iterations = ITERATIONS;
     space->damping = DAMPING;
+
+    // Chipmunk collision handler addition
+    cpSpaceAddCollisionHandler(space, 1, 1, NULL, negotiate_collision, NULL, NULL, NULL);
+
 
     // Default parameters. These will be over-written when/if the program
     // defines them via "set". But just in case the user does not do this,

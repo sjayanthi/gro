@@ -21,6 +21,10 @@ win32 {
   CONFIG -= app_bundle
 }
 
+linux{
+        QMAKE_CXXFLAGS += -Wall -ggdb
+}
+
 macx {
   QMAKE_CXXFLAGS += -fast
 }
@@ -82,6 +86,14 @@ macx {
   PRE_TARGETDEPS += ../build-ccl-Desktop_Qt_5_0_2_clang_64bit-Release/libccl.a
   DEPENDPATH += ../chipmunk/
   INCLUDEPATH += ../ccl/ ../chipmunk/include/chipmunk/
+  # mytarget.commands = COPY EXAMPLES FILE TO APPLICATION DIRECTORY
+}
+
+linux {
+  LIBS += -L../ccl -lccl -L/usr/include/chipmunk -lchipmunk
+  PRE_TARGETDEPS += ../ccl/libccl.a
+  DEPENDPATH += ../chipmunk/
+  INCLUDEPATH += ../ccl/ /usr/include/chipmunk/
   # mytarget.commands = COPY EXAMPLES FILE TO APPLICATION DIRECTORY
 }
 

@@ -18,6 +18,7 @@
 //
 
 #include <QtGui>
+#include <QImageWriter>
 #include "GroThread.h"
 
 #define RESIZE                                    \
@@ -205,8 +206,16 @@ void GroThread::step ( void ) {
 
 bool GroThread::snapshot ( QString pathname ) {
 
-    return image->save(pathname);
+    QImageWriter writer(pathname);
 
+    bool retvalue = writer.write(*image);
+    if (!retvalue){
+        qDebug() << writer.errorString()<<": "<<pathname;
+    }
+
+    //int retvalue =  image->save(pathname);
+    //printf("%d\n", retvalue);
+    return retvalue;
 }
 
 void GroThread::moreCells ( void ) {

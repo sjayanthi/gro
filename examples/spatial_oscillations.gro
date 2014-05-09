@@ -15,7 +15,7 @@
 // TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 //
 
-include gro
+include /home/shridhar/programming/gro/include/gro
 
 set_theme ( bright_theme << [ signals := { { 1,0,0 }, { 0,1,0 } } ] );
 
