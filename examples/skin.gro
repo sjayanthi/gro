@@ -16,7 +16,7 @@
 //
 
 
-include gro
+include /home/shridhar/programming/gro/include/gro
 
 set ( "dt", 0.2 );
 

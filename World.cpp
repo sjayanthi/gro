@@ -80,7 +80,7 @@ negotiate_collision(cpArbiter *arb, cpSpace *space, void *unused)
   aa = (EColi *) a->data;
   bb = (EColi *) b->data;
 
-  int contact_points = cpArbiterGetCount(arb);
+  //int contact_points = cpArbiterGetCount(arb);
 
   Program *program_a = aa-> get_gro_program();
   SymbolTable *table_a  = program_a->get_symtab();
@@ -93,29 +93,31 @@ negotiate_collision(cpArbiter *arb, cpSpace *space, void *unused)
 
   float rate = 0.99;
 
-  if (table_a->get("cdiA")!= NULL && table_b->get("cdiA_CT") != NULL) atob == 1;
-  if (table_b->get("cdiA")!= NULL && table_a->get("cdiA_CT") != NULL) btoa == 1;
+  if (table_a->get("cdiA")!= NULL && table_b->get("cdiA_CT") != NULL)  atob = 1;
+  if (table_b->get("cdiA")!= NULL && table_a->get("cdiA_CT") != NULL) btoa = 1;
 
   if (atob ==1){
       int cdiA_a = table_a -> get("cdiA")->int_value();
       int cdiAct_b = table_b -> get("cdiA_CT")->int_value();
 
       if (cdiA_a >0 && random(0,1)>rate){
-        table_a -> assign("cdiA",new Value(cdiA_a - contact_points));
-        table_b -> assign("cdiA_CT",new Value(cdiAct_b +contact_points));
+        table_a -> assign("cdiA",new Value(cdiA_a - 1));
+        table_b -> assign("cdiA_CT",new Value(cdiAct_b + 1));
       }
+      
   }
 
   if (btoa ==1) {
       int cdiAct_a = table_a -> get("cdiA_CT")->int_value();
       int cdiA_b = table_b -> get("cdiA")->int_value();
       if (cdiA_b>0 && random(0,1)>rate ){
-        table_b -> assign("cdiA",new Value(cdiA_b -contact_points));
-        table_a -> assign("cdiA_CT",new Value(cdiAct_a +contact_points));
+        table_b -> assign("cdiA",new Value(cdiA_b -1));
+        table_a -> assign("cdiA_CT",new Value(cdiAct_a +1));
       }
 
   }
-
+ 
+  
 
  
 
