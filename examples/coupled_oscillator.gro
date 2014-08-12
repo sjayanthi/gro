@@ -16,7 +16,7 @@
 //
 
 
-include gro // coded by Kevin Oishi!
+include /home/shridhar/programming/gro/include/gro
 
 chemostat(true);
 set_theme ( dark_theme );

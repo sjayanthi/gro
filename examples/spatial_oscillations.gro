@@ -19,8 +19,8 @@ include /home/shridhar/programming/gro/include/gro
 
 set_theme ( bright_theme << [ signals := { { 1,0,0 }, { 0,1,0 } } ] );
 
-X := signal ( 1.0, 0.0 );
-Y := signal ( 1.0, 0.0 );
+X := signal ( 1.0, 1.0 );
+Y := signal ( 1.0, 1.0 );
 
 reaction ( {X,Y}, {Y,Y}, 5 );
 reaction ( {X}, {X,X}, 5 );
