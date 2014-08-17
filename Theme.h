@@ -20,7 +20,7 @@
 #ifndef THEME_H
 #define THEME_H
 
-#include "ccl.h"
+#include "../ccl/ccl.h"
 #include "GroPainter.h"
 
 class Theme {

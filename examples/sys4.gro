@@ -1,0 +1,92 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+include /home/shridhar/programming/gro/include/gro
+
+set ("dt",0.05);
+set ("ecoli_growth_rate",0.0);
+
+activ_dif := signal (.015, 1000); 
+rep_dif  := signal(.5, 1000);
+
+program g1() := {
+
+activator := 1;
+repressor := 0;
+gfp := 0;
+rfp := 0;
+
+mactivator := get_signal( activ_dif );
+mrepressor := get_signal( rep_dif); 
+
+rate(.5*repressor) : {repressor := repressor-1};
+rate(1*activator) : {activator :=activator -1};
+
+rate ( 10*(100*(mactivator/10)^2 + .04)/(1+(mactivator/10)^2+mrepressor^4)) : {activator := activator +1};
+
+rate( (100* (mactivator/10)^2 + .004)/(1+(mactivator/10)^2) ) : {repressor := repressor +1};
+
+
+rate ( 1000*activator) : {emit_signal(activ_dif, 1)};
+
+rate ( 1000* repressor) : {emit_signal(rep_dif, 1)};
+
+true: {gfp := 1000*activator;
+	rfp := 1000*repressor;
+	};
+		
+};
+
+program report() := {
+
+  needs activator; 
+  needs repressor; 
+
+  selected : { message ( 1,
+          "cell "     <> tostring(id)
+     <> ": actdif="      <> tostring(get_signal(activ_dif))
+     <> ": repdif="      <> tostring(get_signal(activ_dif))
+     <> ": activator = "<> tostring(activator)
+      <> ": repressor = "<> tostring(repressor)
+//     <> ": rfp/vol="  <> tostring(rfp/volume)
+    )
+  };
+
+};
+
+
+//program movie ( T, path ) := {
+
+//  t := 0;
+//  n := 0;
+//
+//  true : { t := t + dt};
+//
+//  t > T : { 
+//    snapshot ( path <> "cheetahstat3_" <> tostring(n) <> ".tif" );
+//    n := n + 1;
+//    t := 0;
+//  };
+//
+//};
+
+program p() := g1()+report() sharing rfp, gfp, activator, repressor;
+
+ecoli([x := 0,y:=0], program p());
+
+start();
+	

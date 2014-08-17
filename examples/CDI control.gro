@@ -1,0 +1,90 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+
+include /home/shridhar/programming/gro/include/gro
+
+
+
+set ( "dt", 0.1 );
+
+
+program attacker() := {
+
+  rfp := 100;
+  gfp := 0; 
+  cdiA := 0;
+  cdiA_CT := 0;
+
+  rate (1) : {cdiA := cdiA +1};
+  rate (.1 * cdiA) : {cdiA := cdiA-1};
+  true : { rfp :=  100*volume }
+
+};
+
+program target() := {
+  rfp := 0;
+  gfp := 100;
+  cdiA :=0;
+  cdiA_CT :=0;
+  
+
+  //rate (10 *cdiA) : {cdiA := cdiA -1}; 
+  true : { gfp :=  100*volume;	
+	  //set("ecoli_growth_rate", 0.0346574*(1/(1+cdiA_CT^8)) );
+	}
+
+};
+
+program main() := {
+	t := 0; //framerate time tracker
+	s := 0; // total time tracker
+	n := 0;
+	true : {
+		t := t +dt,
+		s := s + dt
+	}
+	t > 2 : {
+		snapshot ( "/home/shridhar/gro_test/CDIcontrol" <> if n<10 then "0" else "" end <> tostring(n) <>".tif"),
+		n := n + 1,
+		t := 0
+	}
+	//s > 150 : {
+	//	stop()
+	//}
+	};
+
+program report() := {
+
+  needs cdiA, cdiA_CT;
+
+  selected : { message ( 1,
+          "cell "  <> tostring(id)
+     <> ": cdiA="  <> tostring(cdiA)
+     <> ": cdiA-CT="  <> tostring(cdiA_CT)  ) }
+
+};
+
+
+
+
+
+ecoli ( [ x:= -40, y:= 0 ], program attacker() +report() sharing cdiA, cdiA_CT, gfp, rfp);
+
+ecoli ( [ x:= 40, y:= 0 ], program target() + report() sharing cdiA, cdiA_CT, gfp, rfp );
+
+

@@ -19,7 +19,7 @@
 
 #ifndef NOGUI
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QDir>
 #include "gui.h"
 
@@ -28,8 +28,8 @@ extern void qt_set_sequence_auto_mnemonic(bool b);
 int main(int argc, char *argv[])
 {
 
-    cpInitChipmunk();
-    cp_collision_slop = 0.2f;
+    //cpInitChipmunk();  deprecated
+    //cp_collision_slop = 0.2f;  function deprecated, collision slop is changed in space now
 
     qt_set_sequence_auto_mnemonic(true);
 

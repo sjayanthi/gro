@@ -17,7 +17,7 @@
 // 
 // 
 
-include standard
+include /home/shridhar/programming/gro/include/standard
 
 // Cell types
 internal unit ecoli ( [ ... ], 'a ) "ecoli";

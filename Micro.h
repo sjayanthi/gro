@@ -37,7 +37,7 @@
 
 #include <stdint.h>
 
-#include "ccl.h"
+#include "../ccl/ccl.h"
 
 
 #include "Cell.h"

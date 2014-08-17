@@ -1,0 +1,127 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+include /home/shridhar/programming/gro/include/gro
+
+set ("dt",0.001);
+
+acti_signal := signal(0, 5);
+
+rep_signal := signal(5, 5);
+
+program g1( act ) := {
+
+  set ("ecoli_growth_rate",0);
+
+  activator := act;
+  repressor := 1;
+
+  gfp := 0;
+  rfp := 0; 
+
+  f1 := 0;
+  f2 :=0;
+
+  mess_act :=0;
+  mess_rep := 0;
+
+  dy := 1;
+  dz := 1.5;
+
+  b1 :=100.0;
+  b3 :=100.0;
+  b2:= 0.04;
+  b4:= 0.004;
+
+  s_a := 100;
+  s_r := 100;
+
+  a2 := 100;
+  a4 := 100;
+
+  true: {
+    mess_act := volume*get_signal ( acti_signal ) ;
+    mess_rep := volume*get_signal ( rep_signal ) ;
+
+    f1 := s_a*(b1*(mess_act)^2 )/(1+(mess_act)^2+( mess_rep )^4);
+    f2 := s_r*(b3* (mess_act)^2 + b4)/(1+(mess_act)^2);
+    
+    gfp := activator; 
+    rfp := repressor;
+ 
+  }
+  
+  rate ( a2*activator/s_a ) : {emit_signal(acti_signal,1) };
+  rate ( a4*repressor/s_r ) : { emit_signal(rep_signal, 1) };
+ 
+  rate (dy*activator) : {activator := activator -1};
+  
+  rate (dz*repressor) : {repressor := repressor-1};
+ 
+ 
+  rate (f1 ) : {activator := activator +1};
+    
+  rate( f2 ) : {repressor := repressor +1};
+ 	
+};
+
+program report() := {
+  needs activator, repressor, mess_act, mess_rep;
+
+  selected : { message ( 1,
+          "cell "     <> tostring(id)
+     <> ": activator="      <> tostring(activator)
+     <> ": repressor=" <> tostring(repressor)
+     <> ": mess_act =" <> tostring(mess_act)
+     <> ": mess_rep =" <> tostring(mess_rep)
+    )
+  };
+
+};
+
+program monitor(  ) := {
+
+  set ("ecoli_growth_rate",0);
+
+  activator := 0;
+  repressor := 0;
+
+  gfp := 0;
+  rfp := 0; 
+  mess_act :=0;
+  mess_rep := 0;
+
+
+  true: {
+    mess_act := volume*get_signal ( acti_signal ) ;
+    mess_rep := volume*get_signal ( rep_signal ) ;
+  };
+};
+
+
+program p( act ) := g1( act )+report() sharing rfp, gfp, activator, repressor, mess_act, mess_rep;
+
+program q() := monitor() + report() sharing rfp, gfp, activator, repressor, mess_act, mess_rep;
+
+foreach i in cross(range 30) (range 3) do
+ ecoli([x := 20*i[0]-300,y:=10*i[1]], program q())
+end;
+
+ecoli([x := -320,y:=0], program p(10));
+
+start();
+	

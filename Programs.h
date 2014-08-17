@@ -21,7 +21,7 @@
 #define _PROGRAM_H_
 
 #include "Micro.h"
-#include "ccl.h"
+#include "../ccl/ccl.h"
 
 class GFP_Program : public MicroProgram {
 

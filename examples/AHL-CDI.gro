@@ -1,0 +1,86 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+
+include /home/shridhar/programming/gro/include/gro
+
+
+
+set ( "dt", 0.1 );
+
+s := signal(1.5,.2);
+
+program ahlcdi() := {
+
+  rfp := 0;
+  gfp := 0; 
+  cdiA := 0;
+  cdiA_CT := 0;
+  act := 0; 
+
+
+  //set("ecoli_growth_rate", .1*0.0346574 );
+
+  //daughter : {
+  //    rfp := 0;
+      //gfp := 0;
+  //    cdiA :=0;
+  //    cdiA_CT := 0;
+  //    act := 0;
+  //}
+
+  rate (.000002) : {act := act+1;};
+  rate (get_signal(s)/(1+get_signal(s))) : {
+	act:=act+1;
+  };
+  rate ( .01*act) : {act := act -1};
+  rate (10*(act/.1)^2/(1+(act/1)^2+(cdiA_CT/.01)^4)) : {
+	act := act+1; 
+	gfp:=gfp+1;
+	cdiA:=cdiA+1;
+  };
+
+  //rate ( cdiA_CT*(act/10)^2/(1+(act/10)^2) ) : {cdiA_CT := cdiA_CT -1 };
+
+  rate ( 1*(act/.1)^2/(1+(act/.1)^2)) : {emit_signal(s,1) };
+
+  //rate (1/(1+(cdiA_CT/10)^4)) : {cdiA := cdiA +1; gfp:=gfp+1};
+  rate ( .001*cdiA ) : {cdiA := cdiA-1};
+  rate ( .01*gfp ) : {gfp := gfp-1};
+  //rate ( .1*rfp ) : {rfp := rfp-1};
+  rate (.1 * cdiA_CT) : {cdiA_CT := cdiA_CT-1};
+  //true : { rfp :=  cdiA_CT*10 }
+
+};
+
+
+program report() := {
+
+  needs cdiA, cdiA_CT, act, gfp;
+
+  selected : { message ( 1,
+          "cell "  <> tostring(id)
+     <> ": cdiA="  <> tostring(cdiA)
+     <> ": cdiA-CT="  <> tostring(cdiA_CT)  
+     <> ": act="  <> tostring(act)
+     <> ": gfp=" <> tostring(gfp)
+     ) }
+
+};
+
+ecoli ( [ x:= 10, y:= 10 ], program ahlcdi() + report() sharing cdiA, cdiA_CT, gfp, rfp, act)
+

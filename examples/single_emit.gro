@@ -1,0 +1,75 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+
+include /home/shridhar/programming/gro/include/gro
+
+//chemostat(true);
+//set_theme ( dark_theme );
+
+set ("dt",.001);
+
+AHL := signal (0,.48);
+
+program p() := {
+  gfp := 0;
+  lcAHL := 0.0;
+  lcAHL2 := 0.01;
+
+  set("ecoli_growth_rate", .001*0.0346574 );
+
+  rate(10) : {
+    emit_signal(AHL,.048)
+  }
+
+  true : {
+    lcAHL := get_signal(AHL);
+    lcAHL2:= get_signal(AHL)*volume;
+    gfp := 1/(lcAHL+.0001);
+  }
+  
+ 
+};
+
+program report() := {
+
+  needs lcAHL,lcAHL2;
+
+  selected : { message ( 1,
+          "cell "  <> tostring(id)
+ //    <> ": LuxI="  <> tostring(LuxI)
+ //    <> ": AraC="  <> tostring(AraC) 
+     <> ": AHL="  <> tostring(lcAHL)  
+     <> ": AHL2="  <> tostring(lcAHL2)  
+  //   <> ": f1="  <> tostring(f1 AraC)
+   //  <> ": f2=" <> tostring(f2 lcAHL)
+     ) }
+
+};
+
+
+//foreach i in cross(range 13) (range 15 ) do
+// ecoli([x := 15*i[0]-90,y:=15*i[1]-85,theta:=.01*rand(314)], program p()+report() sharing lcAHL,gfp, lcAHL2)
+//end;
+
+
+
+ecoli ( [x:=0, y:=0], program p()+report() sharing lcAHL,gfp, lcAHL2 );
+
+
+
+

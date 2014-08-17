@@ -58,7 +58,8 @@ World::~World ( void ) {
     for ( k=0; k<signal_list.size(); k++ )
         delete signal_list[k];
 
-    cpSpaceFreeChildren(space);
+    //Removed since function is unsupported by Chipmunk 6. Must check that every added object is removed.
+    //cpSpaceFreeChildren(space);
     cpSpaceFree(space);
 
     delete population;
@@ -88,7 +89,12 @@ void World::init () {
     // Chipmunk stuff
     cpResetShapeIdCounter();
     space = cpSpaceNew(); // freed in ~World
-    cpSpaceResizeActiveHash(space, 60.0f, 10000);
+
+    // Removed since function isn't supported in Chipmunk 6, recommended by chipmunk developer to remove it.
+    //cpSpaceResizeActiveHash(space, 60.0f, 10000);
+
+
+    space->collisionSlop = 0.2f; //added due to change in chipmunk library from v5 to v6
     space->iterations = ITERATIONS;
     space->damping = DAMPING;
 
@@ -123,7 +129,7 @@ void World::init () {
     if ( chemostat_mode ) {
 
         cpShape *shape;
-        cpBody *staticBody = &space->staticBody;
+        cpBody *staticBody = space->staticBody; //modification because scpSpace.staticbody is now pointer instead of static reference now
 
         int w = get_param("chemostat_width")/2,
                 h = get_param("chemostat_height")/2;
@@ -165,7 +171,7 @@ void World::restart ( void ) {
         delete (*j);
     }
 
-    cpSpaceFreeChildren(space);
+    //cpSpaceFreeChildren(space); function deprecated in chipmunk 6, make sure all shapes are removed
     cpSpaceFree(space);
 
     delete population;

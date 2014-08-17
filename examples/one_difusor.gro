@@ -1,0 +1,82 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+include /home/shridhar/programming/gro/include/gro
+
+set ("dt",0.05);
+set ("ecoli_growth_rate",0.01);
+
+R := signal (1,1); 
+
+
+program g1() := {
+
+activator := 0;
+repressor := 0;
+gfp := 0;
+rfp := 0;
+
+messenger := get_signal( R );
+
+rate(1.5*repressor) : {repressor := repressor-1};
+rate(1*activator) : {activator :=activator -1};
+
+rate ( (90*activator^2 + .04)/(1+activator^2+repressor^4)) : {activator := activator +1};
+
+rate( (40* messenger^2 + 1)/(1+messenger^2) ) : {repressor := repressor +1};
+
+rate ( (30*activator^2 + 0.004)/(1+activator^2) ): {emit_signal( R, 1) };
+
+true: {gfp := 1000;
+	rfp := 1000;
+	};
+		
+};
+
+program report() := {
+
+  selected : { message ( 1,
+          "cell "     <> tostring(id)
+     <> ": ahl="      <> tostring(get_signal(R))
+//     <> ": rfp/vol="  <> tostring(rfp/volume)
+    )
+  };
+
+};
+
+
+//program movie ( T, path ) := {
+
+//  t := 0;
+//  n := 0;
+//
+//  true : { t := t + dt};
+//
+//  t > T : { 
+//    snapshot ( path <> "cheetahstat3_" <> tostring(n) <> ".tif" );
+//    n := n + 1;
+//    t := 0;
+//  };
+//
+//};
+
+program p() := g1()+report() sharing rfp, gfp, activator, repressor;
+
+ecoli([x := 0,y:=0], program p());
+
+start();
+	

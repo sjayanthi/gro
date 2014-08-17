@@ -78,11 +78,19 @@ contains ( CONFIG, nogui ) {
 }
 
 macx {
-  LIBS += -L../build-ccl-Desktop_Qt_5_0_2_clang_64bit-Release/ -lccl -L../chipmunk/src -lchip
-  PRE_TARGETDEPS += ../build-ccl-Desktop_Qt_5_0_2_clang_64bit-Release/libccl.a
+  LIBS += -L../build-ccl-Desktop_Qt_5_1_1_GCC_64bit-Debug/ -lccl -L../chipmunk/src -lchip
+  PRE_TARGETDEPS += ../build-ccl-Desktop_Qt_5_1_1_GCC_64bit-Release/libccl.a
   DEPENDPATH += ../chipmunk/
   INCLUDEPATH += ../ccl/ ../chipmunk/include/chipmunk/
   # mytarget.commands = COPY EXAMPLES FILE TO APPLICATION DIRECTORY
+}
+
+linux {
+    LIBS += -L../ccl -lccl -L/usr/include/chipmunk -lchipmunk
+    PRE_TARGETDEPS += ../ccl/libccl.a
+    DEPENDPATH += ../chipmunk/
+    INCLUDEPATH += ../ccl/ /usr/include/chipmunk/
+# mytarget.commands = COPY EXAMPLES FILE TO APPLICATION DIRECTORY
 }
 
 OTHER_FILES += \

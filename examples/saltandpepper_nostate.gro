@@ -1,0 +1,117 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+
+include /home/shridhar/programming/gro/include/gro
+
+set ( "dt", 0.01 );
+chemostat( true );
+
+UNDEC := 0;
+LEADER := 1;
+FOLLOWER := 2;
+
+
+
+program p() := {
+  
+  //set ( "ecoli_growth_rate", .001 );
+  set ("ecoli_growth_rate", .015); //.015fl/min which means 1/100th cell volume/min
+
+  m := UNDEC;
+  gfp := 0;
+  rfp := 0;
+  cfp := 0;
+
+  cdiA :=0;
+  cdiA_CT:=0;
+
+  // break symmetry
+  //m = LEADER & just_divided & !daughter : { m := LEADER }
+  //just_divided & daughter : { m := UNDEC }
+
+  m = UNDEC & cdiA_CT < 2 : { m:= LEADER }
+  m = LEADER & cdiA_CT >= 2 : { m:= UNDEC }
+
+  // the leader emits a mater control signal
+  //m = LEADER : {
+    
+  //  cfp := 0;
+  //  gfp := 100*volume;
+  //  rfp := 0;
+  //  cdiA :=100;
+  //}
+
+  //m = LEADER & rate(1) : {
+  //}    
+
+  rate( 10/(1+(cdiA_CT/2)^4) ) :{
+       cdiA := cdiA +1;
+  } 
+
+  rate( 100/(1+(cdiA_CT/2)^4) ) :{
+       gfp := gfp +1;
+  }
+
+  //m = UNDEC : {
+   // cdiA := 0;
+   // gfp := 0;
+  //}
+
+//  m = UNDEC & rate(cdiA) : {
+//      cdiA := cdiA -1;
+//  }
+
+  rate ( gfp ) : { gfp := gfp -1 }
+
+  rate (.1*cdiA) : { cdiA := cdiA -1 }
+  rate (.1*cdiA_CT) : { cdiA_CT := cdiA_CT - 1 }
+
+  //m = FOLLOWER : { // this just makes cells a pretty color
+  //  cfp := 0;
+  //  gfp := 0;
+  //  rfp := 100;
+  //  cdiA := 0;
+  //}
+
+  
+  
+
+  // followers die if they are too far away from the leader
+  // the time check is to make sure the first daughter doesn't
+  // die before the leader can send out the signal
+  //p.m = FOLLOWER & get_signal ( s ) < 0.01 & p.t > 50 : {
+  //  die()
+  //}
+
+  //true : { p.t := p.t + dt }
+
+};
+
+program report() := {
+
+  needs cdiA, cdiA_CT;
+
+  selected : { message ( 1,
+          "cell "  <> tostring(id)
+     <> ": cdiA="  <> tostring(cdiA)
+     <> ": cdiA-CT="  <> tostring(cdiA_CT)  ) }
+
+};
+
+ecoli ( [], program p() + report() sharing cdiA, cdiA_CT, gfp, cfp, rfp );
+  

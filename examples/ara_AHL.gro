@@ -1,0 +1,112 @@
+//
+// gro is protected by the UW OPEN SOURCE LICENSE, which is summarized here.
+// Please see the file LICENSE.txt for the complete license.
+//
+// THE SOFTWARE (AS DEFINED BELOW) AND HARDWARE DESIGNS (AS DEFINED BELOW) IS PROVIDED
+// UNDER THE TERMS OF THIS OPEN SOURCE LICENSE (“LICENSE”).  THE SOFTWARE IS PROTECTED
+// BY COPYRIGHT AND/OR OTHER APPLICABLE LAW.  ANY USE OF THIS SOFTWARE OTHER THAN AS
+// AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+//
+// BY EXERCISING ANY RIGHTS TO THE SOFTWARE AND/OR HARDWARE PROVIDED HERE, YOU ACCEPT AND
+// AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.  TO THE EXTENT THIS LICENSE MAY BE
+// CONSIDERED A CONTRACT, THE UNIVERSITY OF WASHINGTON (“UW”) GRANTS YOU THE RIGHTS
+// CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
+//
+// TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+//
+
+
+include /home/shridhar/programming/gro/include/gro
+
+chemostat(true);
+//set_theme ( dark_theme );
+
+set ("dt",.001);
+
+AHL := signal (4.8,.48);
+
+Kd2 :=  100.0;
+Kd3 :=  15*3/2;
+
+b1 := 30.0;
+b2 := b1/300;
+n :=2;
+
+b3 := 15.0;
+b4 := b3/1000;
+m := 2;
+
+a2 := 1.1;
+
+d1 := .0154;
+d3 := .0154;
+
+fun f1 AraC .
+  ((1.0*AraC/Kd3)^2)/((1.0*AraC/Kd3)^2+1);
+fun f2 AHL .
+  1/((1.0*AHL/Kd2)^2+1);
+
+program p() := {
+
+  set("ecoli_growth_rate", 0);//.001*0.0346574 );
+
+  //emit_signal(AHL,350);
+
+  LuxI :=157;
+  AraC :=6;
+  gfp := 0; 
+  lcAHL :=0;
+
+  true : {
+    lcAHL := get_signal(AHL);
+    gfp := AraC;
+  }
+
+  //LuxI >150 : {gfp :=300};
+  //LuxI <150 : {gfp := 0};
+  
+ 
+  rate (b1*(f1 AraC) +b2) : {
+     LuxI := LuxI+1;
+    // gfp := gfp+1;
+  };
+  rate (d1*LuxI) : {
+    LuxI := LuxI-1;
+  };
+
+  rate (a2*LuxI) : {emit_signal(AHL,1)};
+
+  
+
+  rate (b3*(f1 AraC)*(f2 lcAHL)+b4) : {AraC := AraC+1};
+  rate (d3*AraC) : {AraC := AraC-1};
+ 
+};
+
+program report() := {
+
+  needs LuxI, AraC, lcAHL;
+
+  selected : { message ( 1,
+          "cell "  <> tostring(id)
+     <> ": LuxI="  <> tostring(LuxI)
+     <> ": AraC="  <> tostring(AraC) 
+     <> ": AHL="  <> tostring(lcAHL)  
+     <> ": f1="  <> tostring(f1 AraC)
+     <> ": f2=" <> tostring(f2 lcAHL)
+     ) }
+
+};
+
+
+foreach i in cross(range 13) (range 15 ) do
+ ecoli([x := 15*i[0]-90,y:=15*i[1]-85,theta:=.01*rand(314)], program p()+report() sharing LuxI, AraC, lcAHL,gfp)
+end;
+
+
+
+//ecoli ( [x:=0, y:=0], program p()+report() sharing LuxI, AraC, lcAHL,gfp);
+
+
+
+

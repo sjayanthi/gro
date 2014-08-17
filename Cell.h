@@ -20,9 +20,9 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include "chipmunk_private.h"
-#include "chipmunk_unsafe.h"
-#include "ccl.h"
+#include "chipmunk/chipmunk_private.h"
+#include "chipmunk/chipmunk_unsafe.h"
+#include "../ccl/ccl.h"
 #include "Defines.h"
 #include "Utility.h"
 
